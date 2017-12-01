@@ -42,7 +42,7 @@ public final class KingSafetyAnalyzer {
         int closestDistance = Integer.MAX_VALUE;
         for(final Move move : enemyMoves) {
             final int currentDistance = calculateChebyshevDistance(playerKingSquare, move.getDestinationCoordinate());
-            if(currentDistance < closestDistance) {
+            if(currentDistance < closestDistance || (currentDistance == closestDistance && closestPiece != null && move.getMovedPiece().getPieceValue() > closestPiece.getPieceValue())) {
                 closestDistance = currentDistance;
                 closestPiece = move.getMovedPiece();
             }
@@ -50,8 +50,7 @@ public final class KingSafetyAnalyzer {
         return new KingDistance(closestPiece, closestDistance);
     }
 
-    private int calculateChebyshevDistance(final int kingTileId,
-                                           final int enemyAttackTileId) {
+    private int calculateChebyshevDistance(final int kingTileId, final int enemyAttackTileId) {
 
         final int squareOneRank = getRank(kingTileId);
         final int squareTwoRank = getRank(enemyAttackTileId);

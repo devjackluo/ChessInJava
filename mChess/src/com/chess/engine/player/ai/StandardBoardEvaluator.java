@@ -65,7 +65,8 @@ public final class StandardBoardEvaluator
                castle(player) +
                pieceEvaluations(player) +
                pawnStructure(player)+
-                kingSafety(player)
+                kingSafety(player)+
+                rookStructure(board, player)
 
 
                 + check(player)
@@ -143,6 +144,7 @@ public final class StandardBoardEvaluator
         return ((kingDistance.getEnemyPiece().getPieceValue() / 100) * kingDistance.getDistance());
     }
 
+    //it works, just the alpha beta removing all the bad possibilities
     private static int rookStructure(final Board board, final Player player) {
         return RookStructureAnalyzer.get().rookStructureScore(board, player);
     }

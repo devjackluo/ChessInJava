@@ -4,10 +4,7 @@ import com.chess.engine.board.*;
 import com.chess.engine.pieces.King;
 import com.chess.engine.pieces.Piece;
 import com.chess.engine.player.Player;
-import com.chess.engine.player.ai.AlphaBetaWithMoveOrdering;
-import com.chess.engine.player.ai.IterativeDeepening;
-import com.chess.engine.player.ai.StandardBoardEvaluator;
-import com.chess.engine.player.ai.StockAlphaBeta;
+import com.chess.engine.player.ai.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -47,7 +44,7 @@ public final class Table extends Observable {
     private Color darkTileColor = Color.decode("#155bdb");
 
 
-    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(700, 750);
+    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(720, 750);
     private static final Dimension BOARD_PANEL_DIMENSION = new Dimension(400, 350);
     private static final Dimension TILE_PANEL_DIMENSION = new Dimension(10, 10);
 
@@ -376,6 +373,7 @@ public final class Table extends Observable {
                 //final StockAlphaBeta strategy = new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 //final IterativeDeepening strategy = new IterativeDeepening(Table.get().getGameSetup().getSearchDepth());
                 final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
+                //final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
 
                 strategy.addObserver(Table.get().getDebugPanel());
 
@@ -388,6 +386,7 @@ public final class Table extends Observable {
                 //final StockAlphaBeta strategy = new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 //final IterativeDeepening strategy = new IterativeDeepening(Table.get().getGameSetup().getSearchDepth());
                 final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
+                //final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
 
                 strategy.addObserver(Table.get().getDebugPanel());
 
@@ -591,9 +590,11 @@ public final class Table extends Observable {
 
                                 }
 
+                                //Table.get().computerMove = null;
                                 sourceTile = null;
                                 destinationTile = null;
                                 humanMovedPiece = null;
+                                computerMove = null;
 
                                 //System.out.println(chessBoard.currentPlayer() + " has " + chessBoard.currentPlayer().getLegalMoves());
 
@@ -611,6 +612,7 @@ public final class Table extends Observable {
 
                     invokeLater(new Runnable() {
                         public void run() {
+
                             gameHistoryPanel.redo(chessBoard, moveLog);
                             takenPiecesPanel.redo(moveLog);
                             Table.get().moveMadeUpdate(PlayerType.HUMAN);

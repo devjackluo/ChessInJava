@@ -14,7 +14,7 @@ public final class RookStructureAnalyzer {
 
     private static final RookStructureAnalyzer INSTANCE = new RookStructureAnalyzer();
     private static final  List<List<Boolean>> BOARD_COLUMNS = initColumns();
-    private static final int OPEN_COLUMN_ROOK_BONUS = 25;
+    private static final int OPEN_COLUMN_ROOK_BONUS = 15;
     private static final int NO_BONUS = 0;
 
     private RookStructureAnalyzer() {
@@ -44,23 +44,30 @@ public final class RookStructureAnalyzer {
     }
 
     private static List<Integer> calculateRookLocations(final Player player) {
-        final Builder<Integer> playerRookLocations = new Builder<>();
+        final List<Integer> playerRookLocations = new ArrayList<>();
         for(final Piece piece : player.getActivePieces()) {
             if(piece.getPieceType().isRook()) {
                 playerRookLocations.add(piece.getPiecePosition());
             }
         }
-        return playerRookLocations.build();
+        return playerRookLocations;
     }
 
-    private static int calculateOpenFileRookBonus(final Board board,
-                                                  final List<Integer> rookLocations) {
+    private static int calculateOpenFileRookBonus(final Board board, final List<Integer> rookLocations) {
         int bonus = NO_BONUS;
         for(final Integer rookLocation : rookLocations) {
             final int[] piecesOnColumn = createPiecesOnColumnTable(board);
-            final int rookColumn = rookLocation/8;
+
+            //final int rookColumn = rookLocation/8;
+            int rookColumn = rookLocation;
+            while(rookColumn > 7) {
+                rookColumn -= 8;
+            }
+
             for(int i = 0; i < piecesOnColumn.length; i++) {
                 if(piecesOnColumn[i] == 1 && i == rookColumn){
+                    //System.out.println("###########################Free Column for Rook");
+                    //System.out.println("###########################" + rookColumn);
                     bonus += OPEN_COLUMN_ROOK_BONUS;
                 }
 

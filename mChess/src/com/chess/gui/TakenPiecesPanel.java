@@ -28,17 +28,17 @@ class TakenPiecesPanel extends JPanel {
     private final JPanel northPanel;
     private final JPanel southPanel;
 
-    private static final long serialVersionUID = 1L;
+    //private static final long serialVersionUID = 1L;
     private static final Color PANEL_COLOR = Color.decode("0xFDF5E6");
-    private static final Dimension TAKEN_PIECES_PANEL_DIMENSION = new Dimension(40, 80);
+    private static final Dimension TAKEN_PIECES_PANEL_DIMENSION = new Dimension(60, 200);
     private static final EtchedBorder PANEL_BORDER = new EtchedBorder(EtchedBorder.RAISED);
 
     public TakenPiecesPanel() {
         super(new BorderLayout());
         setBackground(Color.decode("0xFDF5E6"));
         setBorder(PANEL_BORDER);
-        this.northPanel = new JPanel(new GridLayout(8, 2));
-        this.southPanel = new JPanel(new GridLayout(8, 2));
+        this.northPanel = new JPanel(new GridLayout(16, 1));
+        this.southPanel = new JPanel(new GridLayout(16, 1));
         this.northPanel.setBackground(PANEL_COLOR);
         this.southPanel.setBackground(PANEL_COLOR);
         add(this.northPanel, BorderLayout.NORTH);
@@ -87,7 +87,7 @@ class TakenPiecesPanel extends JPanel {
                         + ".png"));
                 final ImageIcon ic = new ImageIcon(image);
                 final JLabel imageLabel = new JLabel(new ImageIcon(ic.getImage().getScaledInstance(
-                        ic.getIconWidth() - 15, ic.getIconWidth() - 15, Image.SCALE_SMOOTH)));
+                        ic.getIconWidth() - 45, ic.getIconWidth() - 45, Image.SCALE_SMOOTH)));
                 this.southPanel.add(imageLabel);
             }
             catch (final IOException e) {
@@ -97,12 +97,12 @@ class TakenPiecesPanel extends JPanel {
 
         for (final Piece takenPiece : blackTakenPieces) {
             try {
-                final BufferedImage image = ImageIO.read(new File("art/holywarriors/"
+                final BufferedImage image = ImageIO.read(new File("art/ChessArt/"
                         + takenPiece.getPieceAllegiance().toString().substring(0, 1) + "" + takenPiece.toString()
-                        + ".gif"));
+                        + ".png"));
                 final ImageIcon ic = new ImageIcon(image);
                 final JLabel imageLabel = new JLabel(new ImageIcon(ic.getImage().getScaledInstance(
-                        ic.getIconWidth() - 15, ic.getIconWidth() - 15, Image.SCALE_SMOOTH)));
+                        ic.getIconWidth() - 45, ic.getIconWidth() - 45, Image.SCALE_SMOOTH)));
                 this.northPanel.add(imageLabel);
 
             } catch (final IOException e) {
