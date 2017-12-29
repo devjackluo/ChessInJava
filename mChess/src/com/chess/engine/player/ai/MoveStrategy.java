@@ -7,6 +7,6 @@ public interface MoveStrategy {
 
     long getNumBoardsEvaluated();
 
-    Move execute(Board board );
+    Move execute(Board board ) throws InterruptedException;
 
 }

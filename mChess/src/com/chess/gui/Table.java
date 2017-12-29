@@ -372,10 +372,10 @@ public final class Table extends Observable {
 
                 //final StockAlphaBeta strategy = new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 //final IterativeDeepening strategy = new IterativeDeepening(Table.get().getGameSetup().getSearchDepth());
-                final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
-                //final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
+                //final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
+                final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
 
-                strategy.addObserver(Table.get().getDebugPanel());
+                //strategy.addObserver(Table.get().getDebugPanel());
 
                 bestMove = strategy.execute(Table.get().getGameBoard());
 
@@ -385,10 +385,10 @@ public final class Table extends Observable {
 
                 //final StockAlphaBeta strategy = new StockAlphaBeta(Table.get().getGameSetup().getSearchDepth());
                 //final IterativeDeepening strategy = new IterativeDeepening(Table.get().getGameSetup().getSearchDepth());
-                final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
-                //final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
+                //final AlphaBetaWithMoveOrdering strategy = new AlphaBetaWithMoveOrdering(Table.get().getGameSetup().getSearchDepth(), 0);
+                final MiniMax strategy = new MiniMax(Table.get().getGameSetup().getSearchDepth());
 
-                strategy.addObserver(Table.get().getDebugPanel());
+                //strategy.addObserver(Table.get().getDebugPanel());
 
                 bestMove = strategy.execute(Table.get().getGameBoard());
 

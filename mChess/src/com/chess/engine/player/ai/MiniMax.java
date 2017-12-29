@@ -4,10 +4,14 @@ import com.chess.engine.board.Board;
 import com.chess.engine.board.Move;
 import com.chess.engine.board.BoardUtils;
 import com.chess.engine.board.MoveTransition;
+import com.chess.engine.player.ai.minimaxThread.MiniMaxThread;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class MiniMax implements MoveStrategy {
+public final class MiniMax implements MoveStrategy{
 
     private final BoardEvaluator evaluator;
     private final int searchDepth;
@@ -15,6 +19,8 @@ public final class MiniMax implements MoveStrategy {
     private long executionTime;
     private FreqTableRow[] freqTable;
     private int freqTableIndex;
+
+
 
     public MiniMax(final int searchDepth) {
         this.evaluator = StandardBoardEvaluator.get();
@@ -32,7 +38,7 @@ public final class MiniMax implements MoveStrategy {
         return this.boardsEvaluated;
     }
 
-    public Move execute(final Board board) {
+    public Move execute(final Board board) throws InterruptedException {
         final long startTime = System.currentTimeMillis();
         Move bestMove = Move.MoveFactory.getNullMove();
         int highestSeenValue = Integer.MIN_VALUE;
@@ -43,6 +49,66 @@ public final class MiniMax implements MoveStrategy {
         this.freqTableIndex = 0;
         int moveCounter = 1;
         final int numMoves = board.currentPlayer().getLegalMoves().size();
+
+
+
+        Collection<Move> theMoves = board.currentPlayer().getLegalMoves();
+        Collection<Move> t1Moves = new ArrayList<>();
+        Collection<Move> t2Moves = new ArrayList<>();
+        Collection<Move> t3Moves = new ArrayList<>();
+        Collection<Move> t4Moves = new ArrayList<>();
+        Collection<Move> t5Moves = new ArrayList<>();
+        Collection<Move> t6Moves = new ArrayList<>();
+
+
+        int numThread = 1;
+        for(final Move move : theMoves){
+            if(numThread == 1){
+                t1Moves.add(move);
+            }else if (numThread == 2){
+                t2Moves.add(move);
+            }else if (numThread == 3){
+                t3Moves.add(move);
+            }else if (numThread == 4){
+                t4Moves.add(move);
+            }else if (numThread == 5){
+                t5Moves.add(move);
+            }else if (numThread == 6){
+                t6Moves.add(move);
+            }
+            numThread += 1;
+            if(numThread == 7){
+                numThread = 1;
+            }
+        }
+
+
+
+        MiniMaxThread mmt1 = new MiniMaxThread(board, this.searchDepth, t1Moves);
+        mmt1.startMiniMax();
+        Move bestt1Move = mmt1.returnBestMove();
+
+        MiniMaxThread mmt2 = new MiniMaxThread(board, this.searchDepth, t2Moves);
+        mmt2.startMiniMax();
+        Move bestt2Move = mmt2.returnBestMove();
+
+        MiniMaxThread mmt3 = new MiniMaxThread(board, this.searchDepth, t3Moves);
+        mmt3.startMiniMax();
+        Move bestt3Move = mmt3.returnBestMove();
+
+        MiniMaxThread mmt4 = new MiniMaxThread(board, this.searchDepth, t4Moves);
+        mmt4.startMiniMax();
+        Move bestt4Move = mmt4.returnBestMove();
+
+        MiniMaxThread mmt5 = new MiniMaxThread(board, this.searchDepth, t5Moves);
+        mmt5.startMiniMax();
+        Move bestt5Move = mmt5.returnBestMove();
+
+        MiniMaxThread mmt6 = new MiniMaxThread(board, this.searchDepth, t6Moves);
+        mmt6.startMiniMax();
+        Move bestt6Move = mmt6.returnBestMove();
+
+        /*
         for (final Move move : board.currentPlayer().getLegalMoves()) {
             final MoveTransition moveTransition = board.currentPlayer().makeMove(move);
             if (moveTransition.getMoveStatus().isDone()) {
@@ -67,6 +133,7 @@ public final class MiniMax implements MoveStrategy {
                 System.out.println("\t" + toString() + " can't execute move (" +moveCounter+ "/" +numMoves+ ") " + move);
             }
             moveCounter++;
+
         }
 
         this.executionTime = System.currentTimeMillis() - startTime;
@@ -81,7 +148,70 @@ public final class MiniMax implements MoveStrategy {
         if(this.boardsEvaluated != total) {
             System.out.println("somethings wrong with the # of boards evaluated!");
         }
+        */
+
+        while (bestt1Move == null){
+            bestt1Move = mmt1.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+        while (bestt2Move == null){
+            bestt2Move = mmt2.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+
+        while (bestt3Move == null){
+            bestt3Move = mmt3.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+        while (bestt4Move == null){
+            bestt4Move = mmt4.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+        while (bestt5Move == null){
+            bestt5Move = mmt5.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+
+        while (bestt6Move == null){
+            bestt6Move = mmt6.returnBestMove();
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
+
+        Collection<Move> threadMoves = new ArrayList<>();
+        threadMoves.add(bestt1Move);
+        threadMoves.add(bestt2Move);
+        threadMoves.add(bestt3Move);
+        threadMoves.add(bestt4Move);
+        threadMoves.add(bestt5Move);
+        threadMoves.add(bestt6Move);
+
+        System.out.println(threadMoves);
+
+        MiniMaxThread allMMT = new MiniMaxThread(board, this.searchDepth, threadMoves);
+        allMMT.startMiniMax();
+        bestMove = allMMT.returnBestMove();
+
+        while (bestMove == null){
+            bestMove = allMMT.returnBestMove();
+
+            // prints so it doesn't skip check...
+            Thread.sleep(100);
+        }
+
         return bestMove;
+
     }
 
     public int min(final Board board,
