@@ -9,9 +9,7 @@ import com.chess.engine.pieces.Piece;
 import com.chess.engine.pieces.Queen;
 import com.chess.engine.player.MoveTransition;
 import com.chess.engine.player.Player;
-import com.chess.engine.player.ai.AlphaBeta;
-import com.chess.engine.player.ai.MiniMax;
-import com.chess.engine.player.ai.MoveStrategy;
+import com.chess.engine.player.ai.*;
 import com.chess.pgn.FenUtilities;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -67,6 +65,8 @@ public class Table extends Observable {
     private final static Dimension TILE_PANEL_DIMENSION = new Dimension(10, 10);
 
     private static String defaultPieceImagesPath = "ChessArt/";
+
+    private static int loop = 0;
 
 
     private final Color lightTileColor = Color.decode("0X97B3E6");
@@ -332,11 +332,12 @@ public class Table extends Observable {
 
             Connection c = null;
             Statement stmt = null;
+
             try {
+
                 Class.forName("org.sqlite.JDBC");
                 c = DriverManager.getConnection("jdbc:sqlite:test.db");
                 c.setAutoCommit(false);
-                //System.out.println("Opened database successfully");
 
                 stmt = c.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT * FROM BESTCACHE WHERE STATE = '" + currentBoard + "'ORDER BY DEPTH DESC LIMIT 1");
@@ -348,15 +349,10 @@ public class Table extends Observable {
                     if (depth >= Table.get().gameSetup.getSearchDepth()) {
 
                         Table.get().bestState = rs.getString("BESTSTATE");
-                        //System.out.println("FOUND IN DATABASE");
-                        //System.out.println(rs.getString("DEPTH"));
-
                         rs.close();
                         stmt.close();
                         c.close();
-
                         Table.get().useTable = true;
-
                         int minimaxDepth = 1;
                         final MoveStrategy miniMax = new AlphaBeta(minimaxDepth);
                         return miniMax.execute(Table.get().getGameBoard());
@@ -366,16 +362,10 @@ public class Table extends Observable {
                         System.out.println("DELETING OLD");
 
                         try {
-                            //Class.forName("org.sqlite.JDBC");
-                            //c = DriverManager.getConnection("jdbc:sqlite:test.db");
-                            //c.setAutoCommit(false);
-                            //System.out.println("Opened database successfully");
-
                             stmt = c.createStatement();
                             String sql = "DELETE from BESTCACHE where STATE='" + FenUtilities.createFENFromGame(Table.get().chessBoard) + "';";
                             stmt.executeUpdate(sql);
                             c.commit();
-
                         } catch (Exception e) {
                             System.err.println(e.getClass().getName() + ": " + e.getMessage());
                             System.exit(0);
@@ -394,57 +384,12 @@ public class Table extends Observable {
                 System.err.println(e.getClass().getName() + ": " + e.getMessage());
                 System.exit(0);
             }
-            //System.out.println("Operation done successfully");
-
-
-//            Connection c = null;
-//            try {
-//                Class.forName("org.sqlite.JDBC");
-//                c = DriverManager.getConnection("jdbc:sqlite:test.db");
-//            } catch ( Exception e ) {
-//                System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-//                System.exit(0);
-//            }
-//            System.out.println("Opened database successfully");
-
-//
-//            Connection c = null;
-//            Statement stmt = null;
-//
-//            try {
-//                Class.forName("org.sqlite.JDBC");
-//                c = DriverManager.getConnection("jdbc:sqlite:test.db");
-//                System.out.println("Opened database successfully");
-//
-//                stmt = c.createStatement();
-//                String sql = "CREATE TABLE BESTCACHE " +
-//                        "(ID INTEGER PRIMARY KEY     AUTOINCREMENT," +
-//                        " DEPTH           INT    NOT NULL, " +
-//                        " STATE           TEXT    NOT NULL, " +
-//                        " BESTSTATE            TEXT     NOT NULL) ";
-//                stmt.executeUpdate(sql);
-//                stmt.close();
-//                c.close();
-//            } catch ( Exception e ) {
-//                System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-//                System.exit(0);
-//            }
-//            System.out.println("Table created successfully");
-
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
             int minimaxDepth = Table.get().gameSetup.getSearchDepth();
-            //final MoveStrategy miniMax = new MiniMax(minimaxDepth);
-            final MoveStrategy miniMax = new AlphaBeta(minimaxDepth);
+
+            final MoveStrategy miniMax = new AlphaBetaThreadTwo(minimaxDepth);
+
             return miniMax.execute(Table.get().getGameBoard());
 
         }
@@ -454,19 +399,15 @@ public class Table extends Observable {
 
             try {
 
-
                 if (Table.get().useTable) {
 
-                    //Table.get().chessBoard = FenUtilities.createGameFromFEN(Table.get().bestState);
                     final Move bestMove = get();
-
                     Table.get().updateGameBoard(FenUtilities.createGameFromFEN(Table.get().bestState));
                     Table.get().getMoveLog().addMove(bestMove);
                     Table.get().getGameHistoryPanel().redo(Table.get().getGameBoard(), Table.get().getMoveLog());
                     Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
                     Table.get().getBoardPanel().drawBoard(Table.get().getGameBoard());
                     Table.get().moveMadeUpdate(PlayerType.COMPUTER);
-
                     Table.get().useTable = false;
 
 
@@ -477,64 +418,9 @@ public class Table extends Observable {
 
                     Table.get().updateComputerMove(bestMove);
 
-
                     String oldBoard = FenUtilities.createFENFromGame(Table.get().chessBoard);
-
                     Board bestBoard = Table.get().getGameBoard().currentPlayer().makeMove(bestMove).getTransitionBoard();
                     String newBoard = FenUtilities.createFENFromGame(bestBoard);
-
-                    //System.out.println(oldBoard);
-                    //System.out.println(newBoard);
-
-
-//
-//                Connection c = null;
-//                Statement stmt = null;
-
-//                try {
-//                    Class.forName("org.sqlite.JDBC");
-//                    c = DriverManager.getConnection("jdbc:sqlite:test.db");
-//                    System.out.println("Opened database successfully");
-//
-//                    stmt = c.createStatement();
-//                    String sql = "CREATE TABLE COMPANY " +
-//                            "(ID INTEGER PRIMARY KEY     AUTOINCREMENT," +
-//                            " NAME           TEXT    NOT NULL, " +
-//                            " AGE            INT     NOT NULL, " +
-//                            " ADDRESS        CHAR(50), " +
-//                            " SALARY         REAL)";
-//                    stmt.executeUpdate(sql);
-//                    //stmt.close();
-//                    //c.close();
-//                } catch ( Exception e ) {
-//                    System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-//                    System.exit(0);
-//                }
-//                System.out.println("Table created successfully");
-
-//                Connection c = null;
-//                Statement stmt = null;
-
-//                try {
-//                    Class.forName("org.sqlite.JDBC");
-//                    c = DriverManager.getConnection("jdbc:sqlite:test.db");
-//                    c.setAutoCommit(false);
-//                    System.out.println("Opened database successfully");
-//
-//                    stmt = c.createStatement();
-//                    String sql = "INSERT INTO COMPANY (NAME,AGE,ADDRESS,SALARY) " +
-//                            "VALUES ( 'Paul', 32, 'California', 20000.00 );";
-//                    stmt.executeUpdate(sql);
-//
-//
-//                    stmt.close();
-//                    c.commit();
-//                    c.close();
-//                } catch ( Exception e ) {
-//                    System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-//                    System.exit(0);
-//                }
-//                System.out.println("Records created successfully");
 
 
                     Connection c = null;
@@ -544,23 +430,21 @@ public class Table extends Observable {
                         Class.forName("org.sqlite.JDBC");
                         c = DriverManager.getConnection("jdbc:sqlite:test.db");
                         c.setAutoCommit(false);
-                        //System.out.println("Opened database successfully");
 
                         stmt = c.createStatement();
                         String sql = "INSERT INTO BESTCACHE (DEPTH,STATE,BESTSTATE) " +
                                 "VALUES ( " + Table.get().gameSetup.getSearchDepth() + ",'" + oldBoard + "', '" + newBoard + "');";
 
-                        //System.out.println(sql);
-
                         stmt.executeUpdate(sql);
                         stmt.close();
                         c.commit();
                         c.close();
+
+
                     } catch (Exception e) {
-                        //System.err.println(e.getClass().getName() + ": " + e.getMessage());
                         System.exit(0);
                     }
-                    //System.out.println("Records created successfully");
+
 
 
                     Table.get().updateGameBoard(bestBoard);
@@ -571,7 +455,6 @@ public class Table extends Observable {
                     Table.get().moveMadeUpdate(PlayerType.COMPUTER);
 
                 }
-
 
             } catch (InterruptedException e) {
                 e.printStackTrace();

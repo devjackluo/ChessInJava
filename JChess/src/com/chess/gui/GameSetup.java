@@ -110,6 +110,14 @@ class GameSetup extends JDialog {
         return this.blackPlayerType;
     }
 
+    void setWhitePlayerType(PlayerType pt) {
+        this.whitePlayerType = pt;
+    }
+
+    void setBlackPlayerType(PlayerType pt) {
+        this.blackPlayerType = pt;
+    }
+
     private static JSpinner addLabeledSpinner(Container c, String label, SpinnerModel model) {
         final JLabel l = new JLabel(label);
         c.add(l);
@@ -121,5 +129,9 @@ class GameSetup extends JDialog {
 
     int getSearchDepth() {
         return (Integer)this.searchDepthSpinner.getValue();
+    }
+
+    void setSearchDepth(int value) {
+        this.searchDepthSpinner.setValue(value);
     }
 }
