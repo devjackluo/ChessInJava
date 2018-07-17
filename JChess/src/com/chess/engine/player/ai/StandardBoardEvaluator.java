@@ -30,6 +30,7 @@ public final class StandardBoardEvaluator implements BoardEvaluator {
 
         return pieceValue(player)
                 + check(player)
+                + checkMate(player)
                 + castled(player)
                 + mobility(player)
                 + futureError(depth);
@@ -46,6 +47,10 @@ public final class StandardBoardEvaluator implements BoardEvaluator {
 
     private static int check(Player player) {
         return player.getOpponent().isInCheck() ? CHECK_BONUS : 0;
+    }
+
+    private static int checkMate(Player player) {
+        return player.getOpponent().isInCheckMate() ? CHECK_BONUS*2 : 0;
     }
 
     private static int mobility(final Player player) {

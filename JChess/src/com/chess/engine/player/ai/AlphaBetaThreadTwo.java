@@ -52,7 +52,13 @@ public class AlphaBetaThreadTwo implements MoveStrategy {
 
                             //then call minimax on that move.
 
+                            final int curValue = board.currentPlayer().getAlliance().isWhite() ?
+                                    min(moveTransition.getTransitionBoard(), searchDepth - 1, highestSeenValue, lowestSeenValue) :
+                                    max(moveTransition.getTransitionBoard(), searchDepth - 1, highestSeenValue, lowestSeenValue);
 
+                            handleSync(board, move, curValue);
+
+                            /*
                             currentValue = board.currentPlayer().getAlliance().isWhite() ?
                                     min(moveTransition.getTransitionBoard(), searchDepth - 1, highestSeenValue, lowestSeenValue) :
                                     max(moveTransition.getTransitionBoard(), searchDepth - 1, highestSeenValue, lowestSeenValue);
@@ -78,6 +84,9 @@ public class AlphaBetaThreadTwo implements MoveStrategy {
                                 lowestSeenValue = currentValue;
                                 bestMove = move;
                             }
+                            */
+
+
 
 
                         }
@@ -108,6 +117,23 @@ public class AlphaBetaThreadTwo implements MoveStrategy {
 
         //return the best move
         return bestMove;
+
+    }
+
+
+    private synchronized void handleSync(final Board board, final Move move, final int value){
+
+        currentValue = value;
+
+        if (board.currentPlayer().getAlliance().isWhite() && currentValue > highestSeenValue) {
+            highestSeenValue = currentValue;
+            bestMove = move;
+        }
+
+        if (board.currentPlayer().getAlliance().isBlack() && currentValue < lowestSeenValue) {
+            lowestSeenValue = currentValue;
+            bestMove = move;
+        }
 
     }
 
