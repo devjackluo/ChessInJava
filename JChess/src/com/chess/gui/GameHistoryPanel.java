@@ -80,11 +80,13 @@ public class GameHistoryPanel extends JPanel {
     }
 
     private static String calculateCheckAndCheckMateHash(final Board board) {
+        /*
         if(board.currentPlayer().isInCheckMate()) {
             return "#";
         } else if(board.currentPlayer().isInCheck()) {
             return "+";
         }
+        */
         return "";
     }
 

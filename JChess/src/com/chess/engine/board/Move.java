@@ -3,6 +3,11 @@ package com.chess.engine.board;
 import com.chess.engine.pieces.Pawn;
 import com.chess.engine.pieces.Piece;
 import com.chess.engine.pieces.Rook;
+import com.chess.engine.player.MoveTransition;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static com.chess.engine.board.Board.*;
 
@@ -92,6 +97,53 @@ public abstract class Move {
         return null;
     }
 
+    public Board undo() {
+        final Board.Builder builder = new Builder();
+        for (final Piece piece : this.board.getBlackPieces()) {
+            builder.setPiece(piece);
+        }
+        for (final Piece piece : this.board.getWhitePieces()) {
+            builder.setPiece(piece);
+        }
+        builder.setMoveMaker(this.board.currentPlayer().getAlliance());
+        return builder.build();
+    }
+
+    private static String calculateIfCheckAndCheckMateHash(final Board board) {
+        if(board.currentPlayer().isInCheckMate() ){
+            return "#";
+        } else if(board.currentPlayer().isInCheck()) {
+            return "+";
+        }
+        return "";
+    }
+
+    private static String calculateIfSamePieceSameSpot(final Piece piece, Board board, int destinationCoordinate) {
+
+        for(Piece p : board.currentPlayer().getActivePieces()){
+            if(p.getClass() == piece.getClass() && !p.equals(piece)){
+                final Collection<Move> legalMoves = p.calculateLegalMoves(board);
+                for(Move m : legalMoves){
+                    if(m.getDestinationCoordinate() == destinationCoordinate){
+
+                        if(board.currentPlayer().makeMove(m).getMoveStatus().isDone()) {
+
+                            if (BoardUtils.getPositionAtCoordinate(piece.getPiecePosition()).substring(0, 1).equals(BoardUtils.getPositionAtCoordinate(p.getPiecePosition()).substring(0, 1))) {
+
+                                return piece.getPieceType().toString()
+                                        + BoardUtils.getPositionAtCoordinate(piece.getPiecePosition()).substring(1, 2);
+
+                            } else {
+                                return piece.getPieceType().toString() + BoardUtils.getPositionAtCoordinate(piece.getPiecePosition()).substring(0, 1);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return piece.getPieceType().toString();
+    }
 
     public Board execute() {
 
@@ -125,7 +177,10 @@ public abstract class Move {
 
         @Override
         public String toString() {
-            return movedPiece.getPieceType() + BoardUtils.getPositionAtCoordinate(movedPiece.getPiecePosition()) + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return Move.calculateIfSamePieceSameSpot(this.movedPiece, this.board, this.destinationCoordinate)
+                    + "x"
+                    + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                    + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
         @Override
@@ -149,7 +204,8 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return movedPiece.getPieceType().toString() + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return Move.calculateIfSamePieceSameSpot(this.movedPiece, this.board, this.destinationCoordinate) + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                    + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }
@@ -206,7 +262,8 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                    + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }
@@ -224,7 +281,8 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return BoardUtils.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0,1) + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return BoardUtils.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0,1) + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                    + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }
@@ -262,7 +320,8 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return BoardUtils.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0,1) + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return BoardUtils.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0,1) + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                    + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
 
@@ -321,7 +380,15 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate) + "Q";
+
+            if(isAttack()){
+                return BoardUtils.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0,1)
+                        + "x" + BoardUtils.getPositionAtCoordinate(this.destinationCoordinate)
+                        + "=Q" + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
+            }else{
+                return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate) + "=Q" + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
+            }
+
         }
 
         @Override
@@ -366,7 +433,7 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate);
+            return BoardUtils.getPositionAtCoordinate(this.destinationCoordinate) + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }
@@ -451,7 +518,7 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return "0-0";
+            return "O-O" + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }
@@ -469,7 +536,7 @@ public abstract class Move {
 
         @Override
         public String toString(){
-            return "0-0-0";
+            return "O-O-O" + Move.calculateIfCheckAndCheckMateHash(board.currentPlayer().makeMove(this).getTransitionBoard());
         }
 
     }

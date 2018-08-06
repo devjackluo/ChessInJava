@@ -232,8 +232,33 @@ public class Table extends Observable {
         optionMenu.add(setupGameMenuItem);
 
 
+        final JMenuItem newGameMenuItem = new JMenuItem("New Game");
+        newGameMenuItem.addActionListener(e -> {
+            undoAllMoves();
+        });
+
+        optionMenu.add(newGameMenuItem);
+
+
         return optionMenu;
 
+    }
+
+    private void undoAllMoves() {
+
+        Table.get().getGameSetup().setWhitePlayerType(PlayerType.HUMAN);
+        Table.get().getGameSetup().setBlackPlayerType(PlayerType.HUMAN);
+
+        for(int i = Table.get().getMoveLog().size() - 1; i >= 0; i--) {
+            final Move lastMove = Table.get().getMoveLog().removeMove(Table.get().getMoveLog().size() - 1);
+            this.chessBoard = this.chessBoard.currentPlayer().unMakeMove(lastMove).getTransitionBoard();
+        }
+        this.computerMove = null;
+        Table.get().getMoveLog().clear();
+        Table.get().getGameHistoryPanel().redo(chessBoard, Table.get().getMoveLog());
+        Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
+        Table.get().getBoardPanel().drawBoard(chessBoard);
+        //Table.get().getDebugPanel().redo();
     }
 
     private void setupUpdate(final GameSetup gameSetup) {
@@ -264,6 +289,9 @@ public class Table extends Observable {
                 //execute ai work
                 final AIThinkTank thinkTank = new AIThinkTank();
                 thinkTank.execute();
+
+//                final PGNThinkTank thinkTank = new PGNThinkTank();
+//                thinkTank.execute();
             }
 
             if (Table.get().getGameBoard().currentPlayer().isInCheckMate()) {
@@ -467,6 +495,109 @@ public class Table extends Observable {
     }
 
 
+    public List<String> pgnMoves = new ArrayList<>();
+
+    public synchronized List<String> getPgnMoves() {
+        return pgnMoves;
+    }
+
+    private static class PGNThinkTank extends SwingWorker<Move, String> {
+
+
+
+        private PGNThinkTank() {
+
+            if(Table.get().getPgnMoves().isEmpty()) {
+
+                String png = "1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Nxd4 Nf6 5.Nc3 Bb4 6.Nxc6 bxc6 7.Qd3 O-O 8.Bd2 Bxc3\n" +
+                        "9.Bxc3 Nxe4 10.Qxe4 Re8 11.Be5 f6 12.O-O-O fxe5 13.Bd3 Qg5+ 14.Kb1 Qh6 15.c4 Bb7\n" +
+                        "16.Qf5 d5 17.g4 Bc8 18.Qh5 Qxh5 19.gxh5 Bg4 20.Rc1 e4 21.Bf1 d4 22.h6 g6\n" +
+                        "23.Rg1 Bh5 24.Kc2 Rf8 25.Rg2 Rf5 26.Re1 Raf8 27.Rxe4 Bf3 28.Kd3 Bxe4+ 29.Kxe4 Rf4+  0-1";
+
+                png = png.replaceAll("(\\d?)(\\d+)\\.", "");
+                png = png.replaceAll("\n", " ");
+
+                String[] parts = png.split(" ");
+
+                for(int i = 0; i < parts.length-2; i++){
+                    Table.get().pgnMoves.add(parts[i]);
+                }
+
+            }
+
+        }
+
+        @Override
+        protected Move doInBackground() throws Exception {
+
+            String pgnMove = Table.get().pgnMoves.get(0);
+            Move bestMove = null;
+            List<Move> moves = new ArrayList<>();
+
+//            if(Table.get().pgnMoves.get(0).equals("Qg5+")){
+//                System.out.println("Ok");
+//            }
+
+            for (final Move move : Table.get().chessBoard.currentPlayer().getLegalMoves()) {
+
+                final MoveTransition moveTransition = Table.get().chessBoard.currentPlayer().makeMove(move);
+
+                if (moveTransition.getMoveStatus().isDone()) {
+
+                    moves.add(move);
+
+                    if(move.toString().equals(pgnMove)){
+                        bestMove = move;
+                    }
+
+                }
+            }
+
+
+            System.out.println(bestMove.toString());
+
+
+            return bestMove;
+
+        }
+
+        @Override
+        public void done() {
+
+
+            try {
+
+                final Move bestMove = get();
+
+                Table.get().updateComputerMove(bestMove);
+                Board bestBoard = Table.get().getGameBoard().currentPlayer().makeMove(bestMove).getTransitionBoard();
+                Table.get().updateGameBoard(bestBoard);
+                Table.get().getMoveLog().addMove(bestMove);
+                Table.get().getGameHistoryPanel().redo(Table.get().getGameBoard(), Table.get().getMoveLog());
+                Table.get().getTakenPiecesPanel().redo(Table.get().getMoveLog());
+                Table.get().getBoardPanel().drawBoard(Table.get().getGameBoard());
+                Table.get().moveMadeUpdate(PlayerType.COMPUTER);
+                Table.get().pgnMoves.remove(0);
+
+                if(Table.get().pgnMoves.isEmpty()){
+                    Table.get().getGameSetup().setWhitePlayerType(PlayerType.HUMAN);
+                    Table.get().getGameSetup().setBlackPlayerType(PlayerType.HUMAN);
+                }
+
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+
+
+        }
+
+    }
+
+
     public enum BoardDirection {
 
         NORMAL {
@@ -569,7 +700,6 @@ public class Table extends Observable {
     enum PlayerType {
         HUMAN,
         COMPUTER
-
     }
 
 

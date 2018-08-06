@@ -140,5 +140,8 @@ public abstract class Player {
 
     protected abstract Collection<Move> calculateKingCastles(Collection<Move> playerLegals, Collection<Move> opponentsLegals);
 
+    public MoveTransition unMakeMove(final Move move) {
+        return new MoveTransition(move.undo(), move, MoveStatus.DONE);
+    }
 
 }
